@@ -83,18 +83,27 @@ print(feature_cols)
 # COMMAND ----------
 
 df_pandas = df_featured.select(*feature_cols, "Class").toPandas()
-
-X_raw = df_pandas[feature_cols].values
-y     = df_pandas["Class"].values
-
+ 
+y = df_pandas["Class"].values
+ 
+# Scale only continuous features — hour_of_day and is_night must stay as
+# integers so the dashboard can group by hour correctly.
+NO_SCALE    = ("hour_of_day", "is_night")
+scale_cols  = [c for c in feature_cols if c not in NO_SCALE]
+noscale_cols = [c for c in feature_cols if c in NO_SCALE]
+ 
 scaler   = SklearnScaler()
-X_scaled = scaler.fit_transform(X_raw)
-
+X_scaled = scaler.fit_transform(df_pandas[scale_cols].values)
+ 
+# Combine scaled continuous cols with unscaled categorical cols
+X_all            = np.hstack([X_scaled, df_pandas[noscale_cols].values])
+feature_cols_ordered = scale_cols + noscale_cols
+ 
 print(f"Before SMOTE — Class 0: {sum(y==0):,}  Class 1: {sum(y==1):,}")
-
+ 
 smote = SMOTE(random_state=42, sampling_strategy=0.5)
-X_resampled, y_resampled = smote.fit_resample(X_scaled, y)
-
+X_resampled, y_resampled = smote.fit_resample(X_all, y)
+ 
 print(f"After SMOTE  — Class 0: {sum(y_resampled==0):,}  Class 1: {sum(y_resampled==1):,}")
 
 # COMMAND ----------
@@ -104,16 +113,21 @@ print(f"After SMOTE  — Class 0: {sum(y_resampled==0):,}  Class 1: {sum(y_resam
 
 # COMMAND ----------
 
-pdf_resampled = pd.DataFrame(X_resampled, columns=feature_cols)
-pdf_resampled["Class"] = y_resampled.astype(int)
-
+pdf_resampled = pd.DataFrame(X_resampled, columns=feature_cols_ordered)
+ 
+# SMOTE interpolates all columns as floats — snap the integer columns back.
+pdf_resampled["hour_of_day"] = pdf_resampled["hour_of_day"].round().astype(int).clip(0, 23)
+pdf_resampled["is_night"]    = pdf_resampled["is_night"].round().astype(int).clip(0, 1)
+pdf_resampled["Class"]       = y_resampled.astype(int)
+ 
 df_silver = spark.createDataFrame(pdf_resampled)
-
+ 
 df_silver.write \
     .format("delta") \
     .mode("overwrite") \
+    .option("overwriteSchema", "true") \
     .saveAsTable(TABLE_OUT)
-
+ 
 print(f"Silver table written -> {TABLE_OUT}")
 print(f"Total rows: {df_silver.count():,}")
 
