@@ -1,4 +1,4 @@
-# credit-fraud-pipeline
+# Credit-Fraud-Pipeline
 
 An end-to-end fraud detection pipeline built on Databricks Community Edition. Raw credit card transactions flow through a Bronze → Silver → Gold medallion architecture using PySpark and Delta Lake, a Random Forest model is trained and tracked with MLflow, and results are surfaced on a live public Streamlit dashboard.
 
