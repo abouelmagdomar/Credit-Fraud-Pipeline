@@ -200,6 +200,5 @@ st.markdown("---")
 st.markdown("""
 **Pipeline:** Databricks Community Edition · PySpark · Delta Lake · MLflow  
 **Model:** Random Forest (100 trees, max depth 10) · PySpark ML  
-**Dataset:** ULB Credit Card Fraud Detection · 284,807 transactions  
-**Architecture:** Bronze → Silver → Gold medallion structure  
+**Dataset:** ULB Credit Card Fraud Detection · 284,807 transactions
 """)
