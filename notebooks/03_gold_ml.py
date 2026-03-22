@@ -213,7 +213,7 @@ df_gold.write \
     .mode("overwrite") \
     .saveAsTable(TABLE_OUT)
 
-print(f"Gold table written to {TABLE_OUT}")
+print(f"Gold table written -> {TABLE_OUT}")
 print(f"Total rows: {df_gold.count():,}")
 
 # COMMAND ----------
@@ -233,10 +233,18 @@ print(f"Model saved to {MODEL_PATH}")
 
 # COMMAND ----------
 
+import pandas as pd
+
 EXPORT_PATH = "/Volumes/main/credit-fraud-pipeline/data/gold/scored_predictions.csv"
 
-df_gold.toPandas().to_csv(EXPORT_PATH, index=False)
-print(f"Scored predictions exported to {EXPORT_PATH}")
+pdf_gold   = df_gold.toPandas()
+pdf_silver = spark.table(TABLE_IN).select("hour_of_day").toPandas()
+
+pdf_gold["hour_of_day"] = pdf_silver["hour_of_day"].values
+
+pdf_gold.to_csv(EXPORT_PATH, index=False)
+print(f"Scored predictions exported -> {EXPORT_PATH}")
+print(f"Columns: {list(pdf_gold.columns)}")
 
 # COMMAND ----------
 
