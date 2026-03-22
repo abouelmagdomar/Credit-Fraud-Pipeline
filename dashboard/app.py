@@ -127,6 +127,31 @@ with right2:
 
 st.markdown("---")
 
+st.subheader("Fraud patterns")
+
+if "hour_of_day" not in df.columns:
+    st.info("Hour of day not available in scored predictions — re-export with hour_of_day column to enable this chart.")
+else:
+    hourly = df.groupby("hour_of_day").agg(
+        total=("actual", "count"),
+        fraud=("actual", "sum")
+    ).reset_index()
+    hourly["fraud_rate"] = hourly["fraud"] / hourly["total"]
+
+    fig_hour = px.bar(
+        hourly,
+        x="hour_of_day",
+        y="fraud_rate",
+        title="Fraud rate by hour of day",
+        labels={"hour_of_day": "Hour of day (0–23)", "fraud_rate": "Fraud rate"},
+        color="fraud_rate",
+        color_continuous_scale="Reds"
+    )
+    fig_hour.update_layout(height=400)
+    st.plotly_chart(fig_hour, use_container_width=True)
+
+st.markdown("---")
+
 st.subheader("Live transaction scorer")
 st.markdown("Enter a transaction below to get a real-time fraud risk score based on the trained model threshold.")
 
