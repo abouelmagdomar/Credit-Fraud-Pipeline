@@ -15,7 +15,7 @@ An end-to-end fraud detection pipeline built on Databricks Community Edition. Ra
 
 ## Live dashboard
 
-[View the dashboard on Streamlit Cloud](https://your-streamlit-url-here)
+[View the dashboard on Streamlit Cloud]([https://your-streamlit-url-here](https://credit-fraud-pipeline-abouelmagd-omar.streamlit.app/)
 
 ---
 
